@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router()
-
+const nhietdodoam = require('../models/ndda');
 let io
 setTimeout(()=>{
 	io=require('../socket.js').get()
@@ -8,12 +8,31 @@ setTimeout(()=>{
 
 
 router.get('/',async(req,res)=>{
-	console.log("qq")
+	
 	try{
-		const itensity=req.query.itensity
-		console.log(itensity)
-		io.emit('HouseData',parseFloat(itensity,0))
-		res.json({success: true,message:parseFloat(itensity,0)})
+		const nhietdo= req.query.nhietdo
+		const doam= req.query.doam
+
+		console.log(nhietdo)
+		console.log(doam)
+
+		const ndda = new nhietdodoam({
+			nhietdo,
+			doam
+		})
+		try{
+			await ndda.save();
+		}catch(error){
+			console.log(error);
+		}
+
+		const data ={
+			'nhiet_do':parseFloat(nhietdo,0),
+			'do_am':parseFloat(doam,0)
+		}
+		
+		io.emit('HouseData',data)
+		res.json({success: true,data:data})
 	}catch(error){
 		console.log(error);
 		res.status(500).json({success:false, message: error})
