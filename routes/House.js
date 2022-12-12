@@ -94,5 +94,29 @@ router.get('/data',async(req,res)=>{
 	}
 })
 
+router.get('/chart', async(req, res)=>{
+	try{
+		const data = await nhietdodoam.find().sort({createAt: -1}).limit(10);
+
+		if(!data){
+
+			return res.status(400).json({success:false, message: 'nodata'});
+		}
+		const avg = await nhietdodoam.aggregate([
+			{$sort:{createdAt:-1}},
+			{$limit:10},
+		    { $group: { 
+		    	_id: null, 
+		    	avgTemp: { $avg: '$nhietdo'},
+		    	avgHumidity:{$avg:'$doam'}
+		    } },
+		  ]).exec();
+		return res.json({success: true,data,avg})
+	}catch(error){
+		res.status(500).json({success:false, message: 'nodata'})
+	}
+})
+
+
 
 module.exports = router
