@@ -96,21 +96,22 @@ router.get('/data',async(req,res)=>{
 
 router.get('/chart', async(req, res)=>{
 	try{
-		const data = await nhietdodoam.find().sort({createAt: -1}).limit(10);
+		const data = await nhietdodoam.find().sort({"_id":-1}).limit(10);
 
 		if(!data){
 
 			return res.status(400).json({success:false, message: 'nodata'});
 		}
 		const avg = await nhietdodoam.aggregate([
-			{$sort:{createdAt:-1}},
-			{$limit:10},
+			{$sort:{_id:-1}},
 		    { $group: { 
-		    	_id: null, 
+		    	_id:  { year: { $year: "$createdAt" }, month: { $month: "$createdAt" },dayOfMonth:{ $dayOfMonth:"$createdAt"}
+			}, 
 		    	avgTemp: { $avg: '$nhietdo'},
 		    	avgHumidity:{$avg:'$doam'}
 		    } },
 		  ]).exec();
+	
 		return res.json({success: true,data,avg})
 	}catch(error){
 		res.status(500).json({success:false, message: 'nodata'})
